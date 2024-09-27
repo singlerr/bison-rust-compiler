@@ -129,13 +129,55 @@ Item:
 VisItem:
     Visibility
     (
-      Module
+        Module
       | ExternCrate
       | UseDeclaration
       | Function
       | TypeAlias
       | Struct
+      | Enumeration
+      | Union
+      | ConstantItem
+      | StaticItem
+      | Trait
+      | Implementation
+      | ExternBlock
+     )
+MacroItem:
+     MacroInvocationSemi
+    | MacroRulesDefinition
 
+Module:
+      "mod" IDENTIFIER ";"
+     | "mod" IDENTIFIER "{"
+     InnerAttribute*
+     Item*
+     "}"
+ExternCrate:
+	   "extern" "crate" CrateRef AsClause? ";"
+CrateRef:
+	IDENTIFIER | "self"
+AsClause:
+	"as" ( IDENTIFIER|"_" )
+
+UseDeclaration:
+	"use" UseTree ";"
+UseTree:
+       (SimplePath? "::")? "*"
+       | (SimplePath? "::")? "{" (UseTree(","UseTree)*","?)?"}"
+       | SimplePath("as"(IDENTIFIER|"_"))?
+Function:
+	FunctionQualifiers "fn" IDENTIFIER GenericParams?
+		"(" FunctionParameters? ")"
+		FunctionReturnType? WhereClause?
+		( BlockExpression | ";" )
+FunctionQualifiers:
+		  "const"? "async"? "unsafe"? ( "extern" Abi?)?
+FunctionParameters:
+		  SelfParam ","?
+		  | (SelfParam ",")? FunctionParam("," FunctionParam)* ","?
+SelfParam:
+	 OuterAttribute*(ShorthandSelf | TypedSelf)
 
 %%
 
